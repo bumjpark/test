@@ -1,60 +1,57 @@
-flowchart TD
-    %% Style
-    classDef client fill:#EBF5FB,stroke:#3498DB,stroke-width:2px;
-    classDef security fill:#FEF9E7,stroke:#F1C40F,stroke-width:2px;
-    classDef service fill:#E8F8F5,stroke:#1ABC9C,stroke-width:2px;
-    classDef db fill:#F4ECF7,stroke:#8E44AD,stroke-width:2px;
+```mermaid
+flowchart LR
 
-    %% Client
-    Browser["🖥️ React Client<br/>Browser"]:::client
+    Client([Client])
 
-    %% Security
-    subgraph Security["Spring Security"]
-        JwtFilter["JwtFilter<br/>JWT 검증"]:::security
-        JwtUtil["JwtUtil<br/>토큰 생성/검증"]:::security
-    end
-
-    %% Backend
     subgraph SpringBoot["Spring Boot"]
-        AuthController["AuthController"]:::service
-        TodoController["TodoController"]:::service
-        CalendarController["CalendarController"]:::service
+        subgraph Security
+            SecurityConfig[SecurityConfig]
+            JwtFilter[JwtFilter]
+            JwtUtil[JwtUtil]
+        end
 
-        UserService["UserService"]:::service
-        TodoService["TodoService"]:::service
-        CalendarService["CalendarService"]:::service
+        subgraph Controller
+            AuthController
+            TodoController
+            CalendarController
+        end
 
-        UserRepository["UserRepository"]:::service
-        TodoRepository["TodoRepository"]:::service
-        CalendarRepository["CalendarRepository"]:::service
+        subgraph Service
+            UserService
+            TodoService
+            CalendarService
+        end
 
-        AuthController --> UserService
-        TodoController --> TodoService
-        CalendarController --> CalendarService
-
-        UserService --> UserRepository
-        TodoService --> TodoRepository
-        CalendarService --> CalendarRepository
+        subgraph Repository
+            UserRepository
+            TodoRepository
+            CalendarRepository
+        end
     end
 
-    %% Database
-    MySQL[("MySQL")]:::db
+    DB[(MySQL)]
 
-    %% Flow
-    Browser -->|Login / API Request| JwtFilter
+    Client --> SecurityConfig
+    SecurityConfig --> JwtFilter
     JwtFilter --> JwtUtil
+
     JwtFilter --> AuthController
     JwtFilter --> TodoController
     JwtFilter --> CalendarController
 
-    UserRepository --> MySQL
-    TodoRepository --> MySQL
-    CalendarRepository --> MySQL
+    AuthController --> UserService
+    TodoController --> TodoService
+    CalendarController --> CalendarService
 
-    MySQL --> UserRepository
-    MySQL --> TodoRepository
-    MySQL --> CalendarRepository
+    UserService --> UserRepository
+    TodoService --> TodoRepository
+    CalendarService --> CalendarRepository
 
-    AuthController -. JWT 발급 .-> Browser
-    TodoController -. JSON Response .-> Browser
-    CalendarController -. JSON Response .-> Browser
+    UserRepository --> DB
+    TodoRepository --> DB
+    CalendarRepository --> DB
+
+    AuthController -. JWT .-> Client
+    TodoController -. Response .-> Client
+    CalendarController -. Response .-> Client
+```
