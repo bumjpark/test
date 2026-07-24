@@ -58,33 +58,59 @@ flowchart LR
 
 
 ```mermaid
-flowchart TB
+flowchart LR
 
-    subgraph ClientTier["1. Client Tier (User)"]
-        Browser["Web Browser<br/>HTML5 / CSS3 / JavaScript"]
-    end
+    Client([Client])
 
-    subgraph AppTier["2. Application Tier (Spring Boot)"]
-        WebServer["Embedded Tomcat<br/>Port 8080"]
+    subgraph SpringBoot["Spring Boot"]
 
-        subgraph Framework["Spring Framework"]
-            Security["Spring Security<br/>JWT Authentication"]
-            Controller["REST API Controller"]
-            JPA["Spring Data JPA<br/>Hibernate"]
+        subgraph Security["Security"]
+            SecurityConfig["SecurityConfig"]
+            JwtFilter["JwtFilter"]
+            JwtUtil["JwtUtil"]
         end
 
-        WebServer --> Security
-        Security --> Controller
-        Controller --> JPA
+        subgraph Controller["Controller"]
+            AuthController["AuthController"]
+            TodoController["TodoController"]
+            CalendarController["CalendarController"]
+        end
+
+        subgraph Service["Service"]
+            UserService["UserService"]
+            TodoService["TodoService"]
+            CalendarService["CalendarService"]
+        end
+
+        subgraph Repository["Repository"]
+            UserRepository["UserRepository"]
+            TodoRepository["TodoRepository"]
+            CalendarRepository["CalendarRepository"]
+        end
+
     end
 
-    subgraph DBTier["3. Database Tier"]
-        Pool["HikariCP"]
-        DB[("MySQL<br/>todo_db")]
+    DB[(MySQL)]
 
-        Pool --> DB
-    end
+    Client -->|HTTP Request| SecurityConfig
+    SecurityConfig --> JwtFilter
+    JwtFilter --> JwtUtil
 
-    Browser -->|HTTP REST API<br/>Bearer JWT| WebServer
-    JPA -->|JDBC| Pool
+    JwtFilter --> AuthController
+    JwtFilter --> TodoController
+    JwtFilter --> CalendarController
+
+    AuthController --> UserService
+    TodoController --> TodoService
+    CalendarController --> CalendarService
+
+    UserService --> UserRepository
+    TodoService --> TodoRepository
+    CalendarService --> CalendarRepository
+
+    UserRepository --> DB
+    TodoRepository --> DB
+    CalendarRepository --> DB
+
+    SpringBoot -. JSON / JWT Response .-> Client
 ```
